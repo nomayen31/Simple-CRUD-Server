@@ -41,7 +41,13 @@ async function run() {
       const cursor = userCollection.find()
       const result = await  cursor.toArray();
       res.send(result)
+    })
 
+    app.get('/users/:id', async (req, res) =>{
+      const id = req.params.id;
+      const query = {_id : new ObjectId(id)}
+      const result = await userCollection.findOne(query)
+      res.send(result)
     })
 
 
@@ -53,16 +59,34 @@ async function run() {
       res.send(result)
       console.log(`A document was inserted with the _id: ${result.insertedId}`);  
     })
+
+    app.put('/users/:id',async (req, res)=>{
+      const id = req.params.id;
+      const user = req.body;
+      console.log(id, user);
+      const filter = {_id : new ObjectId(id)}
+      const options = {upsert: true};
+      const updatedUser ={
+        $set:{
+          name : user.name,
+          email : user.email,
+        }
+      }
+
+      const result = await userCollection.updateOne(filter, updatedUser, options)
+      res.send(result)
+
+    })
     
     app.delete('/users/:id',async(req, res)=>{
       const id = req.params.id;
-      console.log('pls delete form DB',id)
+      console.log(' delete form DB',id)
       const query = {_id: new ObjectId(id)};
       const result = await userCollection.deleteOne(query)
       res.send(result)
-      
-
     })
+
+ 
 
 
     await client.db("admin").command({ ping: 1 });
